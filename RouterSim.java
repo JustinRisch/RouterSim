@@ -27,26 +27,62 @@ public class RouterSim {
 			} else if (input.startsWith("add") && input.split(" ").length==2){
 				name = input.split(" ")[1].toLowerCase(); 
 
-				//if it contains an R, add a router. else if it contains a C, add a client. 
-				if (name.contains("r")) {
+				//if it starts with an R, add a router. else if it starts with a C, add a client. 
+				if (name.startsWith("r")) {
 					Network.add(new Router(name));
 					success=true;
-				}else if (name.contains("c")){
+				}else if (name.startsWith("c")){
 					Network.add(new Client(name));
 					success=true;
 				}
+				// shows each device, with it's connections listed below it in form of device - distance
+			} else if (input.startsWith("showall")){
+				if (Network.size()>0){
+					for (device d : Network){
+						System.out.println("------"+d.name+"------");
+						System.out.println(d); 
+					}
+					success=null; 
+				} else 
+					success = false; 
+			} else if (input.startsWith("djikstra") && input.split(" ").length>=3){
+				String start = input.split(" ")[1];
+				String finish = input.split(" ")[2];
+				System.out.println(djikstra(start, finish, start, 0.0)); 
+				success=true;
 			}
-			//if it was successful. 
-			if (success)
+			//if it was successful. Null to not display output. 
+			if (success==null)
+				continue; 
+			else if (success)
 				System.out.println("Success.");
-			else 
-				System.out.println("Last action failed. Check syntax of command."); 
+			else if (!success)
+				System.out.println("Last action failed. Check syntax of command. Be sure to add the device before attempting to connect to it or show them."); 
+
 		}
 		s.close();
 		System.out.println("Simulation Ceased.");
 	}
+	public static String djikstra(String start, String target, String path, Double distance){
+		//finding the starting device
+		int i=0; 
+		for (i = 0; i < Network.size(); i++)
+			if (Network.get(i).name.equals(start))
+				break;
+
+		//searching all of it's connections, if it has any. 
+		if (Network.get(i).connections.size()>0){			
+			for (int j = 0; j < Network.get(i).connections.size(); j++){
+				if (Network.get(i).name == target) 
+					return path +" "+ distance+"\n"; 
+				else 
+					return djikstra(Network.get(i).name, target, path+Network.get(i).name, distance+Network.get(i).distances.get(j));
+			} 
+		}
+		return ""; 
 
 
+	}
 }
 abstract class device  {
 	public String name = "Default Name"; 
@@ -54,8 +90,15 @@ abstract class device  {
 	public ArrayList<String> connections = new ArrayList<String>(0);
 	public boolean MakeConnection(String X, Double Y){ return false;}//to be overloaded. 
 	public String findRoute(String X){ 
-
 		return "Dijstra's here.";
+	}
+	public String toString(){
+		String re=""; 
+		for (int i = 0; i < connections.size(); i++)
+		{
+			re +=connections.get(i) + "-" +  distances.get(i)+"\n";
+		}
+		return re; 
 	}
 }
 class Client extends device  {
@@ -66,11 +109,13 @@ class Client extends device  {
 	}
 	//overloading methods 
 	public boolean MakeConnection(String X, Double Y){
+		//now we remove the previous connection as only one is allowed at a time. 
+		if (connections.size()>0){
+			distances.remove(0);
+			connections.remove(0);
+		}
 		distances.add(Y);
 		connections.add(X);
-		//now we remove the previous connection as only one is allowed at a time. 
-		distances.remove(0);
-		connections.remove(0);
 		return true; 
 	}
 } 
@@ -85,6 +130,16 @@ class Router extends device {
 		distances.add(Y);
 		connections.add(X);
 		return true; 
+	}
+	public boolean removeConnection(String name){
+		boolean re = false; 
+		for (int i = 0; i<connections.size(); i++)
+			if (connections.get(i).equals(name)) {
+				connections.remove(i);
+				distances.remove(i);
+				re = true; 
+			}
+		return re;
 	}
 
 }
