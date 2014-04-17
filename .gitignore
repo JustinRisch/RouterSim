@@ -2,3 +2,6 @@
 /Router.class
 /RouterSim.class
 /device.class
+/RouterSim$Client.class
+/RouterSim$Router.class
+/RouterSim$device.class
