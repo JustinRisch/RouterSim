@@ -69,7 +69,6 @@ public class RouterSim {
 				System.out.println("Success.");
 			else if (!success)
 				System.out.println("Last action failed. Check syntax of command. Be sure to add the device before attempting to connect to it or show them."); 
-
 		}
 		s.close();
 		System.out.println("Simulation Ceased.");
@@ -78,73 +77,88 @@ public class RouterSim {
 		return "not implimented yet.";
 	}
 }
-	abstract class device  {
-		public String name = "Default Name"; 
-		public ArrayList<Double> distances = new ArrayList<Double>(0);
-		public ArrayList<device> connections = new ArrayList<device>(0);
-		public boolean MakeConnection(device X, Double Y){ return false;}//to be overloaded. 
-		public String findRoute(String X){ 
-			return "Dijstra's here.";
-		}
-		//Simulates the sending of a packet. 
-		public void sendPacket(String message, device Target){
-			byte[] bytes = message.getBytes(); 
-			ArrayList<byte[]> packet = new ArrayList<byte[]>(100);	
-			
-		}
-		//Simulates the displaying of a packet
-		public void showPacket(byte[] input){
-			try {
-				System.out.println(new String(input,"UTF-8"));
-			} catch (Exception e) {
-				System.out.println("Packet corrupted.");
+abstract class device  {
+	public String name = "Default Name"; 
+	public ArrayList<Double> distances = new ArrayList<Double>(0);
+	public ArrayList<device> connections = new ArrayList<device>(0);
+	public boolean MakeConnection(device X, Double Y){ return false;}//to be overloaded. 
+	public String findRoute(String X){ 
+		return "Dijstra's here.";
+	}
+	//Simulates the sending of a packet. 
+	public void sendPacket(int PacketSize, String message, device Target){
+		byte[] bytes = message.getBytes(), temp = new byte[PacketSize]; 
+		ArrayList<byte[]> packets = new ArrayList<byte[]>();	
+		//packing packets
+		for (int i = 0; i < bytes.length; i++)
+		{	
+			//wraps from 0->packetsize (mod function)
+			temp[i%PacketSize]=bytes[i];
+			//Every packetsize number of bytes, it will add that new "packet" of bytes to the arraylist. 
+			if (i%PacketSize==0 || i ==(bytes.length-1)){
+				packets.add(temp);
 			}
 		}
-		public String toString(){
-			String re=""; 
-			for (int i = 0; i < connections.size(); i++)
-			{
-				re +=connections.get(i).name + "-" +  distances.get(i)+"\n";
-			}
-			return re; 
+		//sending packets 
+		for (int i = 0; i < packets.size(); i++)
+		{
+			Target.showPacket(packets.get(i));
+		}
+
+	}
+	//Simulates the displaying of a packet
+	public void showPacket(byte[] input){
+		try {
+			System.out.println(new String(input,"UTF-8"));
+		} catch (Exception e) {
+			System.out.println("Packet corrupted.");
 		}
 	}
-	class Client extends device  {
-		//constructors
-		public Client() {}
-		public Client(String X) {name = X; }
-		//overloading methods 
-		public boolean MakeConnection(device X, Double Y){
-			//now we remove the previous connection as only one is allowed at a time. 
-			if (connections.size()>0){
-				distances.remove(0);
-				connections.remove(0);
-			}
-			distances.add(Y);
-			connections.add(X);
-			return true; 
+	public String toString(){
+		String re=""; 
+		for (int i = 0; i < connections.size(); i++)
+		{
+			re +=connections.get(i).name + "-" +  distances.get(i)+"\n";
 		}
-	} 
-	class Router extends device {
-		//constructors
-		public Router(){}
-		public Router(String X){
-			this.name = X;
-		}
-		//overloading methods
-		public boolean MakeConnection(device X, Double Y){
-			distances.add(Y);
-			connections.add(X);
-			return true; 
-		}
-		public boolean removeConnection(String name){
-			boolean re = false; 
-			for (int i = 0; i<connections.size(); i++)
-				if (connections.get(i).equals(name)) {
-					connections.remove(i);
-					distances.remove(i);
-					re = true; 
-				}
-			return re;
-		}
+		return re; 
 	}
+}
+class Client extends device  {
+	//constructors
+	public Client() {}
+	public Client(String X) {name = X; }
+	//overloading methods 
+	public boolean MakeConnection(device X, Double Y){
+		//now we remove the previous connection as only one is allowed at a time. 
+		if (connections.size()>0){
+			distances.remove(0);
+			connections.remove(0);
+		}
+		distances.add(Y);
+		connections.add(X);
+		return true; 
+	}
+} 
+class Router extends device {
+	//constructors
+	public Router(){}
+	public Router(String X){
+		this.name = X;
+	}
+	//overloading methods
+	public boolean MakeConnection(device X, Double Y){
+		distances.add(Y);
+		connections.add(X);
+		return true; 
+	}
+	public boolean removeConnection(String name){
+		boolean re = false; 
+		for (int i = 0; i<connections.size(); i++)
+			if (connections.get(i).equals(name)) {
+				connections.remove(i);
+				distances.remove(i);
+				re = true; 
+			}
+		return re;
+	}
+}
