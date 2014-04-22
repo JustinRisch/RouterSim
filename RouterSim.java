@@ -99,18 +99,29 @@ public class RouterSim {
 		for (int i=0; i<A.connections.size(); i++){ 
 			//path:distance
 			result=FindRoute(A, B, A.name+A.connections.get(i).name, A.distances.get(i)); 
+			System.out.println("----\n"+result);
 			if (Double.parseDouble(result.split(":")[1])<distance || distance ==0)
 				distance=Double.parseDouble(result.split(":")[1]);
 		}
 
-		
+
 
 
 		return A.name + " "+ B.name;
 	}
 	public static String FindRoute(device start, device target, String path, Double Distance){
-		if (start.equals(target))
+		int numSearched = 0; 
+		if (start.equals(target)) // if it has reached the target, return the result. 
 			return path+":"+Distance;
+	
+		for (int i = 0; i<start.connections.size(); i++) // for each device it's connected to 
+			if (!path.contains(start.connections.get(i).name)) {// only searching devices not already searched
+				numSearched++; 
+				FindRoute(start.connections.get(i), target, path+start.connections.get(i).name, Distance+start.distances.get(i));
+			}
+	
+		if (start.connections.size()==0 || numSearched ==0)
+			return null; 
 	}
 }
 abstract class device  {
