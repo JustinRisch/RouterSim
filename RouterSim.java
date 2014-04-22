@@ -64,7 +64,7 @@ public class RouterSim {
 			} else if (input.startsWith("djikstra") && input.split(" ").length>=3){
 				String start = input.split(" ")[1];
 				String finish = input.split(" ")[2];
-				System.out.println(djikstra(start, finish, start, 0.0)); 
+				System.out.println(djikstra(start, finish)); 
 				success=true;
 			}
 			//if it was successful. Null to not display output. 
@@ -78,7 +78,8 @@ public class RouterSim {
 		s.close();
 		System.out.println("Simulation Ceased.");
 	}
-	public static String djikstra(String start, String target, String path, Double distance){
+	public static String djikstra(String start, String target){
+		LinkedList<device> path = new LinkedList<device>(); 
 		device A=new Router(), B = new Router(); 
 		int numfound = 0; 
 		//this for loop finds our starting point and destination
