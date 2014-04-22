@@ -79,7 +79,9 @@ public class RouterSim {
 		System.out.println("Simulation Ceased.");
 	}
 	public static String djikstra(String start, String target){
-		LinkedList<device> path = new LinkedList<device>(); 
+		//LinkedList<device> path = new LinkedList<device>(); 
+		String result;
+		Double distance = 0.0; 
 		device A=new Router(), B = new Router(); 
 		int numfound = 0; 
 		//this for loop finds our starting point and destination
@@ -93,9 +95,22 @@ public class RouterSim {
 			}
 		if (numfound!=2 || (B.name == null || A.name==null))
 			return "Error finding starting point and destination"; 
+		//exploring paths 			
+		for (int i=0; i<A.connections.size(); i++){ 
+			//path:distance
+			result=FindRoute(A, B, A.name+A.connections.get(i).name, A.distances.get(i)); 
+			if (Double.parseDouble(result.split(":")[1])<distance || distance ==0)
+				distance=Double.parseDouble(result.split(":")[1]);
+		}
+
 		
-		
+
+
 		return A.name + " "+ B.name;
+	}
+	public static String FindRoute(device start, device target, String path, Double Distance){
+		if (start.equals(target))
+			return path+":"+Distance;
 	}
 }
 abstract class device  {
