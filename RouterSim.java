@@ -1,5 +1,7 @@
 import java.util.*;
 
+import com.sun.xml.internal.bind.v2.runtime.unmarshaller.XsiNilLoader.Array;
+
 /* We will implement a system where there are two types of net devices-- routers and clients. Clients may only connect to one router, routers 
  * may connect to any number of any devices. 
  * */
@@ -10,6 +12,9 @@ public class RouterSim {
 		String input, from, to, name;
 		Boolean success; 
 		Double distance; 
+		System.out.println("Welcome to RouterSim.\nPlease use the following commands:\nadd [device name] - Adds a device to the network. It must start with R or C to indicate type of device.");
+		System.out.println("connect [device name] [device name] [distance]");
+		System.out.println("djikstra");
 		//assign the value of s.nextLine's lower case version. if it says "exit", stop executing. 
 		while((input=s.nextLine().toLowerCase())!="exit"){
 			success=false;
@@ -74,17 +79,30 @@ public class RouterSim {
 		System.out.println("Simulation Ceased.");
 	}
 	public static String djikstra(String start, String target, String path, Double distance){
-		return "not implimented yet.";
+		device A=new Router(), B = new Router(); 
+		int numfound = 0; 
+		//this for loop finds our starting point and destination
+		for (device x : Network)
+			if (x.name.equals(start)){ 
+				A = x; 
+				numfound++;
+			}else if (x.name.equals (target)) {
+				B = x;
+				numfound++;
+			}
+		if (numfound!=2 || (B.name == null || A.name==null))
+			return "Error finding starting point and destination"; 
+		
+		
+		return A.name + " "+ B.name;
 	}
 }
 abstract class device  {
-	public String name = "Default Name"; 
+	public String name; 
 	public ArrayList<Double> distances = new ArrayList<Double>(0);
 	public ArrayList<device> connections = new ArrayList<device>(0);
 	public boolean MakeConnection(device X, Double Y){ return false;}//to be overloaded. 
-	public String findRoute(String X){ 
-		return "Dijstra's here.";
-	}
+
 	//Simulates the sending of a packet. 
 	public void sendPacket(int PacketSize, String message, device Target){
 		byte[] bytes = message.getBytes(), temp = new byte[PacketSize]; 
