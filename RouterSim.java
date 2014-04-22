@@ -18,7 +18,7 @@ public class RouterSim {
 		while((input=s.nextLine().toLowerCase())!="exit"){
 			success=false;
 			//proper syntax to add a connection: "connect fromthisdevice tothisdevice distance" 
-			if (input.startsWith("connect") && input.split(" ").length>3){
+			if (input.startsWith("connect") && input.split(" ").length>=3){
 				from = input.split(" ")[1];
 				to = input.split(" ")[2];
 				int index1=0, index2=0, numfound=0; 
@@ -107,9 +107,13 @@ public class RouterSim {
 	public static Double[][] convert(ArrayList<device> Network) {
 		//creating a square array where each variable 
 		Double[][] temp = new Double[Network.size()][Network.size()];  
+		for (int i = 0; i< temp.length; i++) 						//Setting defaults
+			for (int j =0; j<Network.get(i).connections.size(); j++)
+					temp[i][j]=Double.POSITIVE_INFINITY; 
+		
 		for (int i = 0; i< temp.length; i++) 				// for every device in the network
-			for (device X : Network.get(i).connections){	// for every device that device is connected to 
-				temp[i][X.index]=X.distances.get(X.index);  // store the distance between them 
+			for (int j =0; j<Network.get(i).connections.size(); j++){	// for every device that device is connected to 
+				temp[i][Network.get(j).index]=Network.get(j).distances.get(j);  // store the distance between them 
 			}
 		return temp; 
 	}
@@ -139,11 +143,11 @@ public class RouterSim {
 	 */
 	public static double FindDistance(device start, device target){
 		int i1 = lookUpIndex(start), i2 = lookUpIndex(target);
-		Double[][] net = convert(Network);
+		Double[][] net = convert(Network);		
 		for(int i=0; i<net.length; i++) { 
 			for(int j=0; j<net.length; j++) {
 				for(int x=0; x<net.length; x++) {
-					double testnum=net[i][j]+net[j][x]+net[j][j];
+					double testnum=net[i][j]+net[j][x];
 					if (net[i][j] > 0 && net[j][x] > 0){
 						if (testnum< net[i][x] || net[i][x]<0) {
 							net[i][x]=testnum;
