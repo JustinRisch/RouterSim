@@ -43,8 +43,8 @@ public class RouterSim {
 			} else if (input.startsWith("send") && input.split(" ").length==5){ 
 				String[] temp = input.split(" "); 
 				String route = FindDistance(lookUpDevice(temp[3]), lookUpDevice(temp[4]));
-				if (route.contains("Infinity") || route.contains("Self")){
-					System.out.println("Packets cannot be sent to self or a non-connected device.");
+				if (route.contains("Infinity")){
+					System.out.println("There exists no path to this device.");
 					success=null;
 				} else {
 					System.out.println(route);
@@ -188,14 +188,9 @@ abstract class device  {
 		byte[] bytes = message.getBytes(), temp = new byte[PacketSize]; 
 		ArrayList<byte[]> packets = new ArrayList<byte[]>();	
 		//packing packets
-		for (int i = 0; i < bytes.length; i++)
+		for (int i = 0; i < bytes.length; i+=PacketSize)
 		{	
-			//wraps from 0->packetsize (mod function)
-			temp[i%PacketSize]=bytes[i];
-			//Every packetsize number of bytes, it will add that new "packet" of bytes to the arraylist. 
-			if (i%PacketSize==0 || i ==(bytes.length-1)){
-				packets.add(temp);
-			}
+			packets.add(message.substring(i, Math.min(i+PacketSize, message.length())).getBytes());
 		}
 		//sending packets 
 		for (int i = 0; i < packets.size(); i++)
@@ -204,6 +199,7 @@ abstract class device  {
 		}
 
 	}
+	
 	//Simulates the displaying of a packet
 	public void showPacket(byte[] input){
 		try {
