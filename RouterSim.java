@@ -14,7 +14,6 @@ public class RouterSim {
 		System.out.println("Welcome to RouterSim.\nPlease use the following commands:\nadd [device name] - Adds a device to the network. It must start with R or C to indicate type of device.");
 		System.out.println("connect [device name] [device name] [distance]");
 		System.out.println("reconnect [device name] [device name] [distance]");
-
 		System.out.println("djikstra [from] [to] - finds the shortest route to a device from a device.");
 		System.out.println("routetable - Prints out a Route Table for all devices.");
 		//assign the value of s.nextLine's lower case version. if it says "exit", stop executing. 
@@ -72,7 +71,7 @@ public class RouterSim {
 				}
 			} else if (input.startsWith("routetable")){ 
 				try { 
-					PrintWriter writer = new PrintWriter("routertable.txt", "UTF-8");
+					PrintWriter writer = new PrintWriter("routetable.txt", "UTF-8");
 					for (device d : Network){
 						System.out.println("------"+d.name+"------");
 						writer.println("------"+d.name+"------");
@@ -133,7 +132,7 @@ public class RouterSim {
 		s.close();
 		System.out.println("Simulation Ceased.");
 	}
-	
+
 	public static int lookUpIndex(String A){
 		int i = -1; 
 		for (device x : Network)
@@ -180,7 +179,7 @@ public class RouterSim {
 
 	public static String FindDistance(device start, device target){
 		if (start.equals(target))
-			return "Self-0";
+			return "Self|0";
 		int i1 = lookUpIndex(start), i2 = lookUpIndex(target);
 
 		String[][] path = new String[Network.size()][Network.size()];
@@ -188,7 +187,7 @@ public class RouterSim {
 			for(int x=0; x<path[1].length; x++) 
 				path[j][x]=lookUpDevice(j).name;
 		Double[][] net = convert(Network);		
-
+		for (device d : Network) //make it repeat the tests for absolution. 
 		for(int j=0; j<net.length; j++) {
 			for(int x=0; x<net.length; x++) {
 				double testnum=net[i1][j]+net[j][x];
@@ -196,12 +195,12 @@ public class RouterSim {
 					if (testnum< net[i1][x] || net[i1][x]<0) {
 						net[i1][x]=testnum;
 						net[x][i1]=testnum;
-						path[i1][x]=path[i1][j]+"-"+net[i1][j]+" " +path[j][x]+"-"+net[j][x];	
+						path[i1][x]=path[i1][j]+"-"+net[i1][j]+"-" +path[j][x]+"-"+net[j][x];	
 					}
 				}
 			}
 		}
-		return path[i1][i2]+" "+target.name+":"+net[i1][i2];
+		return target.name+"|"+path[i1][i2]+" "+target.name+":"+net[i1][i2];
 	}
 }
 abstract class device  {
@@ -211,7 +210,7 @@ abstract class device  {
 	public ArrayList<device> connections = new ArrayList<device>(0);
 	public boolean MakeConnection(device X, Double Y){ return false;}//to be overloaded. 
 	public boolean reconnect(device X, Double Y){return false;}
-	
+
 	//Simulates the sending of a packet. 
 	public static void sendPacket(int PacketSize, String message, device source, device Target){
 		byte[] bytes = message.getBytes(); 
