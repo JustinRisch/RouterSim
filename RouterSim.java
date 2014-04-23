@@ -18,7 +18,7 @@ public class RouterSim {
 		while((input=s.nextLine().toLowerCase())!="exit"){
 			success=false;
 			//proper syntax to add a connection: "connect fromthisdevice tothisdevice distance" 
-			if (input.startsWith("connect") && input.split(" ").length>=3){
+			if (input.startsWith("connect") && input.split(" ").length>3){
 				from = input.split(" ")[1];
 				to = input.split(" ")[2];
 				int index1=0, index2=0, numfound=0; 
@@ -54,7 +54,7 @@ public class RouterSim {
 					System.out.println(Network.get(Network.size()-1));
 					success=true;
 				}
-			
+
 				// shows each device, with it's connections listed below it in form of device - distance
 			} else if (input.startsWith("showall")){
 				if (Network.size()>0){
@@ -90,6 +90,14 @@ public class RouterSim {
 				i = x.index;
 		return i; 
 	}
+	public static device lookUpDevice(int A){
+
+		device i = null;
+		for (device x : Network)
+			if (x.index==A)
+				i = x;
+		return i; 
+	}
 	public static int lookUpIndex(device A){
 		int i = -1; 
 		for (device x : Network)
@@ -98,6 +106,7 @@ public class RouterSim {
 		return i; 
 	}
 	public static device lookUpDevice(String A){
+
 		device i = null;
 		for (device x : Network)
 			if (x.name.equals(A))
@@ -107,57 +116,37 @@ public class RouterSim {
 	public static Double[][] convert(ArrayList<device> Network) {
 		//creating a square array where each variable 
 		Double[][] temp = new Double[Network.size()][Network.size()];  
-		for (int i = 0; i< temp.length; i++) 						//Setting defaults
-			for (int j =0; j<Network.get(i).connections.size(); j++)
-					temp[i][j]=Double.POSITIVE_INFINITY; 
-		
+		for (int i = 0; i< Network.size(); i++) 						//Setting defaults
+			for (int j =0; j<Network.size(); j++)
+				temp[i][j]=Double.POSITIVE_INFINITY; 
+
 		for (int i = 0; i< temp.length; i++) 				// for every device in the network
 			for (int j =0; j<Network.get(i).connections.size(); j++){	// for every device that device is connected to 
-				temp[i][Network.get(j).index]=Network.get(j).distances.get(j);  // store the distance between them 
+				temp[i][Network.get(i).connections.get(j).index]=Network.get(i).distances.get(j);  // store the distance between them 
 			}
 		return temp; 
 	}
-	/*
-	public static String djikstra(String start, String target){
-		LinkedList<LinkedList<device>> net = new LinkedList<LinkedList<device>>();
-		LinkedList<device> path = new LinkedList<device>(); 
-		String result;
-		Double distance = 0.0; 
-		device A=new Router(), B = new Router(); 
-		int numfound = 0; 
-		//this for loop finds our starting point and destination
-		for (device x : Network)
-			if (x.name.equals(start)){ 
-				A = x; 
-				numfound++;
-			}else if (x.name.equals (target)) {
-				B = x;
-				numfound++;
-			}
-		if (numfound!=2 || (B.name == null || A.name==null))
-			return "Error finding starting point and destination"; 
-		//exploring paths 			
-
-		return A.name + " "+ B.name;
-	}
-	 */
-	public static double FindDistance(device start, device target){
+		 
+	public static String FindDistance(device start, device target){
 		int i1 = lookUpIndex(start), i2 = lookUpIndex(target);
+		String path = start.name;
 		Double[][] net = convert(Network);		
-		for(int i=0; i<net.length; i++) { 
+		
 			for(int j=0; j<net.length; j++) {
 				for(int x=0; x<net.length; x++) {
-					double testnum=net[i][j]+net[j][x];
-					if (net[i][j] > 0 && net[j][x] > 0){
-						if (testnum< net[i][x] || net[i][x]<0) {
-							net[i][x]=testnum;
-							net[x][i]=testnum;
+					//System.out.println("j:"+j + " i:"+i+" x:"+x);
+					double testnum=net[i1][j]+net[j][x];
+					//System.out.println(testnum);
+					if (net[i1][j] > 0 && net[j][x] > 0){
+						if (testnum< net[i1][x] || net[i1][x]<0) {
+							net[i1][x]=testnum;
+							net[x][i1]=testnum;
+							path+=" " +lookUpDevice(x).name;
 						}
 					}
 				}
-			}
 		}
-		return net[i1][i2];
+		return path+":"+net[i1][i2];
 	}
 }
 abstract class device  {
