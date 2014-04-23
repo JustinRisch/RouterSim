@@ -1,5 +1,5 @@
 import java.util.*;
-
+import java.io.PrintWriter; 
 
 /* We will implement a system where there are two types of net devices-- routers and clients. Clients may only connect to one router, routers 
  * may connect to any number of any devices. 
@@ -21,7 +21,27 @@ public class RouterSim {
 		while((input=s.nextLine().toLowerCase())!="exit"){
 			success=false;
 			//proper syntax to add a connection: "connect fromthisdevice tothisdevice distance" 
-			if (input.startsWith("connect") && input.split(" ").length>3){
+			if (input.startsWith("reconnect") && input.split(" ").length>3){
+				from = input.split(" ")[1];
+				to = input.split(" ")[2];
+				int index1=0, index2=0, numfound=0; 
+				distance = Double.parseDouble(input.split(" ")[3]);
+
+				for (int i = 0; i<Network.size(); i++)
+				{
+					if (Network.get(i).name.equalsIgnoreCase(from)) {
+						index1=i; 
+						numfound++;
+					} else if (Network.get(i).name.equalsIgnoreCase(to)) {
+						index2=i; 
+						numfound++;
+					}
+				}	
+				if (numfound==2){
+					success=(Network.get(index1).reconnect(Network.get(index2), distance) && Network.get(index2).reconnect(Network.get(index1), distance));
+				} 
+			} 
+			else if (input.startsWith("connect") && input.split(" ").length>3){
 				from = input.split(" ")[1];
 				to = input.split(" ")[2];
 				int index1=0, index2=0, numfound=0; 
@@ -48,16 +68,24 @@ public class RouterSim {
 					success=null;
 				} else {
 					System.out.println(route);
-				device.sendPacket(Integer.parseInt(temp[1]), temp[2], lookUpDevice(temp[3]), lookUpDevice(temp[4])); 
+					device.sendPacket(Integer.parseInt(temp[1]), temp[2], lookUpDevice(temp[3]), lookUpDevice(temp[4])); 
 				}
 			} else if (input.startsWith("routetable")){ 
-				for (device d : Network){
-					System.out.println("------"+d.name+"------");
-					for (device e : Network)
-						System.out.println(FindDistance(d,e));
+				try { 
+					PrintWriter writer = new PrintWriter("routertable.txt", "UTF-8");
+					for (device d : Network){
+						System.out.println("------"+d.name+"------");
+						writer.println("------"+d.name+"------");
+						for (device e : Network) {
+							System.out.println(FindDistance(d,e));
+							writer.println(FindDistance(d,e));
+						}
+					}
+					writer.close();
+					success=null; 
+				}catch(Exception e) {
+					System.out.print("Failed to write route table to file.");
 				}
-
-				success=null; 
 			} else if (input.startsWith("add") && input.split(" ").length>=2){
 				for (int i =1; i<input.split(" ").length;i++){
 					name = input.split(" ")[i].toLowerCase(); 
@@ -105,6 +133,7 @@ public class RouterSim {
 		s.close();
 		System.out.println("Simulation Ceased.");
 	}
+	
 	public static int lookUpIndex(String A){
 		int i = -1; 
 		for (device x : Network)
@@ -168,7 +197,6 @@ public class RouterSim {
 						net[i1][x]=testnum;
 						net[x][i1]=testnum;
 						path[i1][x]=path[i1][j]+"-"+net[i1][j]+" " +path[j][x]+"-"+net[j][x];	
-
 					}
 				}
 			}
@@ -183,9 +211,10 @@ abstract class device  {
 	public ArrayList<device> connections = new ArrayList<device>(0);
 	public boolean MakeConnection(device X, Double Y){ return false;}//to be overloaded. 
 	public boolean reconnect(device X, Double Y){return false;}
+	
 	//Simulates the sending of a packet. 
 	public static void sendPacket(int PacketSize, String message, device source, device Target){
-		byte[] bytes = message.getBytes(), temp = new byte[PacketSize]; 
+		byte[] bytes = message.getBytes(); 
 		ArrayList<byte[]> packets = new ArrayList<byte[]>();	
 		//packing packets
 		for (int i = 0; i < bytes.length; i+=PacketSize)
@@ -199,7 +228,7 @@ abstract class device  {
 		}
 
 	}
-	
+
 	//Simulates the displaying of a packet
 	public void showPacket(byte[] input){
 		try {
@@ -209,7 +238,7 @@ abstract class device  {
 		}
 	}
 	public String toString(){
-		String re=name+":"+index+"_"; 
+		String re="_"+name+":"+index+"_"; 
 		for (int i = 0; i < connections.size(); i++)
 		{
 			re +="\n"+connections.get(i).name + "-" +  distances.get(i);
@@ -248,14 +277,15 @@ class Router extends device {
 		return true; 
 	}
 	public boolean reconnect(device X, Double Y){
-		removeConnection(X.name);
-		MakeConnection(X, Y);
+		this.removeConnection(X.name);
+		this.MakeConnection(X, Y);
 		return true; 
 	}
 	public boolean removeConnection(String name){
 		boolean re = false; 
+		device a = RouterSim.lookUpDevice(name);
 		for (int i = 0; i<connections.size(); i++)
-			if (connections.get(i).equals(name)) {
+			if (connections.get(i).equals(a)) {
 				connections.remove(i);
 				distances.remove(i);
 				re = true; 
